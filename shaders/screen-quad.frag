@@ -10,6 +10,5 @@ layout(location = 0) in vec2 bufferCoords;
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    vec2 texCoords  = bufferCoords * 0.5 + 0.5; // Transform from NDC coordinates [-1, 1] to normalised UV coordinates [0, 1]
-    outColor        = texture(texSampler, texCoords);
+    outColor = texture(texSampler, bufferCoords);
 }

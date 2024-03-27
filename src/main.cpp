@@ -11,6 +11,7 @@ DISABLE_WARNINGS_POP()
 #include <framework/window.h>
 
 #include <utils/constants.h>
+#include <utils/render_utils.hpp>
 #include <mesh.h>
 
 #include <array>
@@ -27,6 +28,9 @@ int main(int argc, char* argv[]) {
     GPUMesh& mainMesh               = subMeshes[0];
     const Shader debugShader        = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "deferred.vert")
                                                      .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "debug.frag").build();
+    const Shader depthTexWrite      = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "deferred.vert").build();
+    const Shader screenQuad         = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "screen-quad.vert")
+                                                     .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "screen-quad.frag").build();
 
     // Set GLFW key callback
     window.registerKeyCallback([&](int key, int /* scancode */, int action, int /* mods */) {
@@ -35,7 +39,7 @@ int main(int argc, char* argv[]) {
     });
 
     // Create depth texture and accompanying framebuffer
-    std::array<GLint, 4> swizzleAllAccessRed = {GL_TEXTURE_SWIZZLE_R, GL_TEXTURE_SWIZZLE_R, GL_TEXTURE_SWIZZLE_R, GL_TEXTURE_SWIZZLE_R};
+    std::array<GLint, 4> swizzleAllAccessRed = {GL_RED, GL_RED, GL_RED, GL_RED};
     GLuint texDepth, depthTexFramebuffer;
     glCreateTextures(GL_TEXTURE_2D, 1, &texDepth);
     glTextureStorage2D(texDepth, 1, GL_DEPTH_COMPONENT32F, window.getWindowSize().x, window.getWindowSize().y);
@@ -50,28 +54,38 @@ int main(int argc, char* argv[]) {
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
 
+    // Set default values for clearing framebuffer
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearDepth(1.0f);
+
     // Render loop
     while (!window.shouldClose()) {
         window.updateInput();
-
-        // Clear the framebuffer to black and depth to maximum value (ranges from [-1.0 to +1.0]).
-        glViewport(0, 0, window.getWindowSize().x, window.getWindowSize().y);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Set model (incl. normal) and MVP matrices
         const glm::mat4 model       = glm::mat4(1.0f);
         const glm::mat3 normalModel = glm::inverseTranspose(glm::mat3(model));
         const glm::mat4 mvp         = trackball.projectionMatrix() * trackball.viewMatrix() * model;
 
-        // Bind debug shader and MVP uniforms
-        debugShader.bind();
+        // Render to depth texture
+        glBindFramebuffer(GL_FRAMEBUFFER, depthTexFramebuffer);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, window.getWindowSize().x, window.getWindowSize().y);
+        depthTexWrite.bind();
         glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(mvp));
         glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix3fv(2, 1, GL_FALSE, glm::value_ptr(normalModel));
+        mainMesh.draw(depthTexWrite);
 
-        // Draw the mesh
-        mainMesh.draw(debugShader);
+        // Draw the depth texture to the screen
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, window.getWindowSize().x, window.getWindowSize().y);
+        screenQuad.bind();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texDepth);
+        glUniform1i(0, 0);
+        utils::renderQuad();
 
         // Present result to the screen.
         window.swapBuffers();
