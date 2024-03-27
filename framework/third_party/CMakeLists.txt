@@ -1,0 +1,7 @@
+add_subdirectory("glm")
+add_subdirectory("tinyobjloader")
+add_subdirectory("glad")
+add_subdirectory("glfw3")
+add_subdirectory("imgui")
+add_subdirectory("stb")
+add_subdirectory("nativefiledialog")
