@@ -12,7 +12,8 @@ DISABLE_WARNINGS_POP()
 
 #include <utils/constants.h>
 #include <utils/render_utils.hpp>
-#include <mesh.h>
+#include <render/environment_map.h>
+#include <render/mesh.h>
 
 #include <array>
 #include <vector>
@@ -22,6 +23,15 @@ int main(int argc, char* argv[]) {
     // Init core objects
     Window window { "Shading", glm::ivec2(utils::WIDTH, utils::HEIGHT), OpenGLVersion::GL46 };
     Trackball trackball { &window, glm::radians(50.0f) };
+
+    // Environment map
+    EnvMapFilePaths envMapFilePaths = { .right  = utils::RESOURCES_PATH / "skybox" / "right.jpg",
+                                        .left   = utils::RESOURCES_PATH / "skybox" / "left.jpg",
+                                        .top    = utils::RESOURCES_PATH / "skybox" / "top.jpg",
+                                        .bottom = utils::RESOURCES_PATH / "skybox" / "bottom.jpg",
+                                        .front  = utils::RESOURCES_PATH / "skybox" / "front.jpg",
+                                        .back   = utils::RESOURCES_PATH / "skybox" / "back.jpg" };
+    EnvironmentMap environmentMap(envMapFilePaths);
 
     // Load resources
     std::vector<GPUMesh> subMeshes  = GPUMesh::loadMeshGPU(utils::RESOURCES_PATH / "dragon.obj");
@@ -73,9 +83,10 @@ int main(int argc, char* argv[]) {
         window.updateInput();
 
         // Set model (incl. normal) and MVP matrices
-        const glm::mat4 model       = glm::mat4(1.0f);
-        const glm::mat3 normalModel = glm::inverseTranspose(glm::mat3(model));
-        const glm::mat4 mvp         = trackball.projectionMatrix() * trackball.viewMatrix() * model;
+        const glm::mat4 model           = glm::mat4(1.0f);
+        const glm::mat3 normalModel     = glm::inverseTranspose(glm::mat3(model));
+        const glm::mat4 viewProjection  = trackball.projectionMatrix() * trackball.viewMatrix();
+        const glm::mat4 mvp             = viewProjection * model;
 
         // Render to geometry info textures
         glBindFramebuffer(GL_FRAMEBUFFER, geomInfoFramebuffer);
