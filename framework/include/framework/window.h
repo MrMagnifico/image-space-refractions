@@ -15,7 +15,7 @@ DISABLE_WARNINGS_POP()
 enum class OpenGLVersion {
 	GL2,
 	GL3,
-	GL45
+	GL46
 };
 
 class Window {

@@ -10,8 +10,8 @@ namespace utils {
     const std::filesystem::path SHADERS_PATH    = SHADERS_DIR;
 
     // Initial window size config
-    constexpr int WIDTH     = 800;
-    constexpr int HEIGHT    = 600;
+    constexpr int32_t WIDTH     = 1280;
+    constexpr int32_t HEIGHT    = 720;
 }
 
 #endif 

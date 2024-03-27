@@ -41,9 +41,9 @@ Window::Window(std::string_view title, const glm::ivec2& windowSize, OpenGLVersi
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        } else if (glVersion == OpenGLVersion::GL45) {
+        } else if (glVersion == OpenGLVersion::GL46) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         }
 #ifndef NDEBUG // Automatically defined by CMake when compiling in Release/MinSizeRel mode.
@@ -130,7 +130,7 @@ Window::Window(std::string_view title, const glm::ivec2& windowSize, OpenGLVersi
             }
         } break;
         case OpenGLVersion::GL3:
-        case OpenGLVersion::GL45: {
+        case OpenGLVersion::GL46: {
             if (!ImGui_ImplOpenGL3_Init()) {
                 std::cerr << "Could not initialize imgui" << std::endl;
                 exit(1);
@@ -157,7 +157,7 @@ Window::~Window()
             ImGui_ImplOpenGL2_Shutdown();
         } break;
         case OpenGLVersion::GL3:
-        case OpenGLVersion::GL45: {
+        case OpenGLVersion::GL46: {
             ImGui_ImplOpenGL3_Shutdown();
         } break;
         };
@@ -190,7 +190,7 @@ void Window::updateInput()
             ImGui_ImplOpenGL2_NewFrame();
         } break;
         case OpenGLVersion::GL3:
-        case OpenGLVersion::GL45: {
+        case OpenGLVersion::GL46: {
             ImGui_ImplOpenGL3_NewFrame();
         } break;
         };
@@ -210,7 +210,7 @@ void Window::swapBuffers()
             ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         } break;
         case OpenGLVersion::GL3:
-        case OpenGLVersion::GL45: {
+        case OpenGLVersion::GL46: {
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         } break;
         };

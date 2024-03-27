@@ -85,7 +85,7 @@ glm::mat4 Trackball::viewMatrix() const
 
 glm::mat4 Trackball::projectionMatrix() const
 {
-    return glm::perspective(m_fovy, m_pWindow->getAspectRatio(), 0.01f, 100.0f);
+    return glm::perspective(m_fovy, m_pWindow->getAspectRatio(), 0.3f, 30.0f);
 }
 
 glm::vec3 Trackball::rotationEulerAngles() const {
