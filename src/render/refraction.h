@@ -23,7 +23,7 @@ private:
     void initShaders();
     void initTexturesAndFramebuffers();
     void renderGeometry(const GPUMesh& mesh, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
-    void renderGeometrySingle(const GPUMesh& mesh, const glm::mat4& model, const glm::mat4& normalModel, const glm::mat4& mvp);
+    void renderGeometrySingle(const GPUMesh& mesh, const glm::mat4& model, const glm::mat3& normalModel, const glm::mat4& mvp);
     void drawQuad(GLuint texture);
 
     Config& m_config;

@@ -17,8 +17,7 @@ Menu::Menu(Config& config)
 void Menu::draw() {
     ImGui::Begin("Controls");
 
-    // Thing to draw selection controls
-    // Shader selection controls
+    // Selection controls for which thing to draw
     constexpr auto renderOptions = magic_enum::enum_names<RenderOption>();
     std::vector<const char*> renderOptionsPointers;
     std::transform(std::begin(renderOptions), std::end(renderOptions), std::back_inserter(renderOptionsPointers),

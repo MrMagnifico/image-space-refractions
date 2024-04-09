@@ -126,7 +126,7 @@ void RefractionRender::renderGeometry(const GPUMesh& mesh,
 }
 
 void RefractionRender::renderGeometrySingle(const GPUMesh& mesh,
-                                            const glm::mat4& model, const glm::mat4& normalModel, const glm::mat4& mvp) {
+                                            const glm::mat4& model, const glm::mat3& normalModel, const glm::mat4& mvp) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     m_renderGeometry.bind();
     glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(mvp));
