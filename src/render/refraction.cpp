@@ -28,7 +28,7 @@ RefractionRender::~RefractionRender() {
 
 void RefractionRender::initShaders() {
     m_renderGeometry    = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "deferred.vert")
-                                         .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "write-normal.frag").build();
+                                         .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "write-geometric.frag").build();
     m_screenQuad        = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "screen-quad.vert")
                                          .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "screen-quad.frag").build();
 }

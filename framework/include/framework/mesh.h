@@ -6,7 +6,9 @@ DISABLE_WARNINGS_PUSH()
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 DISABLE_WARNINGS_POP()
+
 #include <filesystem>
+#include <limits>
 #include <optional>
 #include <span>
 #include <vector>
@@ -14,7 +16,8 @@ DISABLE_WARNINGS_POP()
 struct Vertex {
 	glm::vec3 position;
 	glm::vec3 normal;
-	glm::vec2 texCoord; // Texture coordinate
+	glm::vec2 texCoord; 										// Texture coordinate
+	float distanceInner { std::numeric_limits<float>::max() };	// Distance to the nearest point on the interior of the mesh along normal (d_N in the paper)
 
 	[[nodiscard]] constexpr bool operator==(const Vertex&) const noexcept = default;
 };

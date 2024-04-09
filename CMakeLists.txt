@@ -17,6 +17,10 @@ target_include_directories(RefractionsLib PUBLIC "${CMAKE_CURRENT_LIST_DIR}/src/
 target_compile_features(RefractionsLib PUBLIC cxx_std_23)
 target_link_libraries(RefractionsLib PUBLIC CGFramework)
 
+# Find and link OpenMP
+find_package(OpenMP REQUIRED)
+target_link_libraries(RefractionsLib PUBLIC OpenMP::OpenMP_CXX)
+
 # Main executable config
 add_executable(RefractionsExec "src/main.cpp")
 enable_sanitizers(RefractionsExec)

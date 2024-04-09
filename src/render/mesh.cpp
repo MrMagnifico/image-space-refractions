@@ -42,9 +42,10 @@ GPUMesh::GPUMesh(const Mesh& cpuMesh)
     glEnableVertexArrayAttrib(m_vao, 1);
     glEnableVertexArrayAttrib(m_vao, 2);
     // We tell OpenGL what each vertex looks like and how they are mapped to the shader (location = ...).
-    glVertexArrayAttribFormat(m_vao, 0, 3, GL_FLOAT, 0, offsetof(Vertex, position));
+    glVertexArrayAttribFormat(m_vao, 0, 3, GL_FLOAT, false, offsetof(Vertex, position));
     glVertexArrayAttribFormat(m_vao, 1, 3, GL_FLOAT, false, offsetof(Vertex, normal));
     glVertexArrayAttribFormat(m_vao, 2, 2, GL_FLOAT, false, offsetof(Vertex, texCoord));
+    glVertexArrayAttribFormat(m_vao, 3, 1, GL_FLOAT, false, offsetof(Vertex, distanceInner));
     // For each of the vertex attributes we tell OpenGL to get them from VBO at slot 0.
     glVertexArrayAttribBinding(m_vao, 0, 0);
     glVertexArrayAttribBinding(m_vao, 1, 0);

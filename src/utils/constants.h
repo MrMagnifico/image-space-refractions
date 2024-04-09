@@ -19,7 +19,8 @@ namespace utils {
     constexpr int32_t HEIGHT    = 720;
 
     // Numerical constants
-    constexpr float ZERO_EPSILON = 1e-5f;
+    constexpr float ZERO_EPSILON        = 1e-5f;
+    constexpr float INTERIOR_RAY_OFFSET = 1e-3f;
 }
 
 #endif 
