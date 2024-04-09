@@ -10,7 +10,7 @@ DISABLE_WARNINGS_POP()
 
 #include <ray_tracing/common.h>
 #include <ray_tracing/interpolate.h>
-#include <utils/numerical_utils.hpp>
+#include <utils/numerical_utils.h>
 
 #include <cmath>
 #include <limits>

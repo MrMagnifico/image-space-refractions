@@ -10,6 +10,7 @@
 #include <ui/menu.h>
 #include <utils/config.h>
 #include <utils/constants.h>
+#include <utils/numerical_utils.h>
 #include <utils/progressbar.hpp>
 
 #include <omp.h>
@@ -55,7 +56,7 @@ int main(int argc, char* argv[]) {
             .t          = std::numeric_limits<float>::max()
         };
         bvh.intersect(interiorRay, dummyHit);
-        vertex.distanceInner = interiorRay.t;
+        vertex.distanceInner = utils::linearMap(interiorRay.t, 0.0f, Trackball::FAR_PLANE, 0.0f, 1.0f) ; // Normalise from [0, furthestPossibleDepth] to [0, 1]
 
         #pragma omp critical
         progressbar.update();

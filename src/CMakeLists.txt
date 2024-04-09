@@ -9,4 +9,6 @@ target_sources(RefractionsLib
         "${CMAKE_CURRENT_LIST_DIR}/render/refraction.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/render/texture.cpp"
         
-        "${CMAKE_CURRENT_LIST_DIR}/ui/menu.cpp")
+        "${CMAKE_CURRENT_LIST_DIR}/ui/menu.cpp"
+        
+        "${CMAKE_CURRENT_LIST_DIR}/utils/numerical_utils.cpp")
