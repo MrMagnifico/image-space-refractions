@@ -1,8 +1,12 @@
 #include <render/environment_map.h>
 
-#include <utils/constants.h>
-
+#include <framework/disable_all_warnings.h> // Disable compiler warnings in third-party code (which we cannot change)
+DISABLE_WARNINGS_PUSH()
+#include <glm/gtc/type_ptr.hpp>
+DISABLE_WARNINGS_POP()
 #include <stb/stb_image.h>
+
+#include <utils/constants.h>
 
 #include <array>
 
@@ -19,7 +23,32 @@ EnvironmentMap::~EnvironmentMap() {
     glDeleteBuffers(1, &m_cubeVBO);
 }
 
+void EnvironmentMap::render(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
+    // Remove translation component from viewProjection matrix
+    glm::mat4 viewNoTranslation     = glm::mat4(glm::mat3(view));
+    glm::mat4 viewProjection        = projection * viewNoTranslation;
+    
+    // Bind shader and set uniforms
+    m_renderCubeMap.bind();
+    glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(viewProjection));
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemapTex);
+    glUniform1i(1, 0);
+
+    // Draw unit cube with face culling
+    GLboolean cullFaceWasBeingUsed;
+    glGetBooleanv(GL_CULL_FACE, &cullFaceWasBeingUsed);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glBindVertexArray(m_cubeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, NUM_CUBE_TRIANGLES * 3); // 3 vertices per triangle
+    glCullFace(GL_BACK);
+    if (!cullFaceWasBeingUsed) { glDisable(GL_CULL_FACE); }
+}
+
 void EnvironmentMap::createCubemapTex(const EnvMapFilePaths& texPaths) {
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
     // Yes, we use the bindless API to push texture data because I can't be bothered
     // to concatenate the data of separate images
     glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_cubemapTex);
@@ -27,6 +56,7 @@ void EnvironmentMap::createCubemapTex(const EnvMapFilePaths& texPaths) {
     std::array<std::filesystem::path, 6> pathsArr = { texPaths.right,   texPaths.left,
                                                       texPaths.top,     texPaths.bottom,
                                                       texPaths.front,   texPaths.back };
+    stbi_set_flip_vertically_on_load(false); // This allows for the images to be vertically oriented correctly
     for (uint8_t faceIdx = 0U; faceIdx < 6UL; faceIdx++) {
         int32_t width, height, channels;
         const std::filesystem::path& faceTexPath    = pathsArr[faceIdx];
@@ -42,6 +72,8 @@ void EnvironmentMap::createCubemapTex(const EnvMapFilePaths& texPaths) {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         stbi_image_free(data);
     }
+    stbi_set_flip_vertically_on_load(true);
+
     glTextureParameteri(m_cubemapTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(m_cubemapTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTextureParameteri(m_cubemapTex, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -50,6 +82,7 @@ void EnvironmentMap::createCubemapTex(const EnvMapFilePaths& texPaths) {
 }
 
 void EnvironmentMap::createCubeBuffers() {
+    // Vertices of cube's triangles, separated by face
     float skyboxVertices[] = {
         -1.0f,  1.0f, -1.0f,
         -1.0f, -1.0f, -1.0f,

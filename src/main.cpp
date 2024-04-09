@@ -21,7 +21,7 @@ DISABLE_WARNINGS_POP()
 
 int main(int argc, char* argv[]) {
     // Init core objects
-    Window window { "Shading", glm::ivec2(utils::WIDTH, utils::HEIGHT), OpenGLVersion::GL46 };
+    Window window { "Image-Space Refractions", glm::ivec2(utils::WIDTH, utils::HEIGHT), OpenGLVersion::GL46 };
     Trackball trackball { &window, glm::radians(50.0f) };
 
     // Environment map
@@ -73,6 +73,7 @@ int main(int argc, char* argv[]) {
 
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
 
     // Set default values for clearing framebuffer
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -85,8 +86,7 @@ int main(int argc, char* argv[]) {
         // Set model (incl. normal) and MVP matrices
         const glm::mat4 model           = glm::mat4(1.0f);
         const glm::mat3 normalModel     = glm::inverseTranspose(glm::mat3(model));
-        const glm::mat4 viewProjection  = trackball.projectionMatrix() * trackball.viewMatrix();
-        const glm::mat4 mvp             = viewProjection * model;
+        const glm::mat4 mvp             = trackball.projectionMatrix() * trackball.viewMatrix() * model;
 
         // Render to geometry info textures
         glBindFramebuffer(GL_FRAMEBUFFER, geomInfoFramebuffer);
@@ -106,7 +106,15 @@ int main(int argc, char* argv[]) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texNormal);
         glUniform1i(0, 0);
-        utils::renderQuad();
+        // utils::renderQuad(); // TODO: Move to UI controls
+
+        // Render environment map
+        debugShader.bind();
+        glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(mvp));
+        glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix3fv(2, 1, GL_FALSE, glm::value_ptr(normalModel));
+        mainMesh.draw(debugShader);
+        environmentMap.render(trackball.viewMatrix(), trackball.projectionMatrix(), trackball.position());
 
         // Present result to the screen.
         window.swapBuffers();

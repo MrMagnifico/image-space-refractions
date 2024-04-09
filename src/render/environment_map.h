@@ -7,6 +7,7 @@
 #include <framework/disable_all_warnings.h> // Disable compiler warnings in third-party code (which we cannot change)
 DISABLE_WARNINGS_PUSH()
 #include <glm/mat4x4.hpp>
+#include <glm/vec2.hpp>
 DISABLE_WARNINGS_POP()
 
 #include <filesystem>
@@ -22,9 +23,11 @@ public:
     EnvironmentMap(const EnvMapFilePaths& texPaths);
     ~EnvironmentMap();
 
-    void render(const glm::mat4 viewProjection);
+    void render(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
 
 private:
+    static constexpr GLsizei NUM_CUBE_TRIANGLES = 12;
+
     GLuint m_cubemapTex;
     GLuint m_cubeVAO;
     GLuint m_cubeVBO;
