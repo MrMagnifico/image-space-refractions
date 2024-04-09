@@ -87,7 +87,7 @@ bool GPUMesh::hasTextureCoords() const
     return m_hasTextureCoords;
 }
 
-void GPUMesh::draw(const Shader& drawingShader)
+void GPUMesh::draw(const Shader& drawingShader) const
 {
     // Bind material data uniform (we assume that the uniform buffer objectg is always called 'Material')
     // Yes, we could define the binding inside the shader itself, but that would break on OpenGL versions below 4.2

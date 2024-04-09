@@ -27,6 +27,10 @@ void EnvironmentMap::render(const glm::mat4& view, const glm::mat4& projection, 
     // Remove translation component from viewProjection matrix
     glm::mat4 viewNoTranslation     = glm::mat4(glm::mat3(view));
     glm::mat4 viewProjection        = projection * viewNoTranslation;
+
+    // Bind on-screen framebuffer and clear current values
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     // Bind shader and set uniforms
     m_renderCubeMap.bind();
