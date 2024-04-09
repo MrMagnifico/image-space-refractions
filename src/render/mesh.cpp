@@ -37,10 +37,11 @@ GPUMesh::GPUMesh(const Mesh& cpuMesh)
     // See definition of Vertex in <framework/mesh.h>
     // We bind the vertex buffer to slot 0 of the VAO and tell the VBO how large each vertex is (stride).
     glVertexArrayVertexBuffer(m_vao, 0, m_vbo, 0, sizeof(Vertex));
-    // Tell OpenGL that we will be using vertex attributes 0, 1 and 2.
+    // Tell OpenGL that we will be using vertex attributes 0, 1, 2, and 3.
     glEnableVertexArrayAttrib(m_vao, 0);
     glEnableVertexArrayAttrib(m_vao, 1);
     glEnableVertexArrayAttrib(m_vao, 2);
+    glEnableVertexArrayAttrib(m_vao, 3);
     // We tell OpenGL what each vertex looks like and how they are mapped to the shader (location = ...).
     glVertexArrayAttribFormat(m_vao, 0, 3, GL_FLOAT, false, offsetof(Vertex, position));
     glVertexArrayAttribFormat(m_vao, 1, 3, GL_FLOAT, false, offsetof(Vertex, normal));
@@ -50,6 +51,7 @@ GPUMesh::GPUMesh(const Mesh& cpuMesh)
     glVertexArrayAttribBinding(m_vao, 0, 0);
     glVertexArrayAttribBinding(m_vao, 1, 0);
     glVertexArrayAttribBinding(m_vao, 2, 0);
+    glVertexArrayAttribBinding(m_vao, 3, 0);
 
     // Each triangle has 3 vertices.
     m_numIndices = static_cast<GLsizei>(3 * cpuMesh.triangles.size());

@@ -33,6 +33,7 @@ private:
 
     GLuint m_depthTexFront, m_depthTexBack;
     GLuint m_normalsTexFront, m_normalsTexBack;
+    GLuint m_innerDistTexFront, m_innerDistTexBack;
     GLuint m_framebufferFront, m_framebufferBack;
 };
 

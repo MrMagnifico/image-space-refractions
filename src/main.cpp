@@ -36,15 +36,15 @@ int main(int argc, char* argv[]) {
     EnvironmentMap environmentMap(envMapFilePaths);
 
     // Load mesh into CPU and construct BVH
-    std::vector<Mesh> allLoadedMeshes   = loadMesh(utils::RESOURCES_PATH / "suzanne.obj", true);
+    std::vector<Mesh> allLoadedMeshes   = loadMesh(utils::RESOURCES_PATH / "spot.obj", true);
     Mesh& mainMeshCPU                   = allLoadedMeshes[0];
     BoundingVolumeHierarchy bvh(mainMeshCPU, config);
 
     // Compute d_N for every vertex in the mesh
     // We have to use an index-based loop WITH A FUCKING SIGNED INT because MSVC OpenMP support is stuck in 2006
-    std::cout << "Computing inner distances..." << std::endl;
     HitInfo dummyHit;
     progressbar progressbar(static_cast<int32_t>(mainMeshCPU.vertices.size()));
+    std::cout << "Computing inner distances..." << std::endl;
     #pragma omp parallel for
     for (int32_t vertexIdx = 0; vertexIdx < mainMeshCPU.vertices.size(); vertexIdx++) {
         Vertex& vertex          = mainMeshCPU.vertices[vertexIdx];
@@ -56,6 +56,8 @@ int main(int argc, char* argv[]) {
         };
         bvh.intersect(interiorRay, dummyHit);
         vertex.distanceInner = interiorRay.t;
+
+        #pragma omp critical
         progressbar.update();
     }
     std::cout << std::endl << "Finished computing inner distances!" << std::endl;
