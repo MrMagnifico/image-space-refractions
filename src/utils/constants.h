@@ -2,9 +2,14 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+#include <framework/opengl_includes.h>
+
 #include <filesystem>
 
 namespace utils {
+    // OpenGL constants
+    constexpr GLuint INVALID = 0xFFFFFFFF;
+    
     // Resource paths
     const std::filesystem::path RESOURCES_PATH  = RESOURCES_DIR;
     const std::filesystem::path SHADERS_PATH    = SHADERS_DIR;
