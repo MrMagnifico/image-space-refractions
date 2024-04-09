@@ -75,7 +75,7 @@ std::vector<GPUMesh> GPUMesh::loadMeshGPU(std::filesystem::path filePath) {
         throw MeshLoadingException(std::format("File {} does not exist", filePath.string().c_str()));
 
     // Genereate GPU-side meshes for all sub-meshes
-    std::vector<Mesh> subMeshes = loadMesh(filePath);
+    std::vector<Mesh> subMeshes = loadMesh(filePath, true);
     std::vector<GPUMesh> gpuMeshes;
     for (const Mesh& mesh : subMeshes) { gpuMeshes.emplace_back(mesh); }
     
