@@ -14,9 +14,9 @@ enum class RenderOption {
 };
 
 struct Config {
-    RenderOption currentRender { RenderOption::DepthFrontFace }; // The thing to be currently rendered
-
-    float refractiveIndex { 0.15f };
+    RenderOption currentRender  { RenderOption::DepthFrontFace }; // The thing to be currently rendered
+    bool useBVH                 { true };
+    float refractiveIndex       { 0.15f };
 };
 
 

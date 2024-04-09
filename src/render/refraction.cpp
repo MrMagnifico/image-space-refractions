@@ -20,22 +20,25 @@ RefractionRender::RefractionRender(Config& config, glm::ivec2 windowDims)
 }
 
 RefractionRender::~RefractionRender() {
-    std::array<GLuint, 2> framebuffers = { m_framebufferFront, m_framebufferBack };
-    glDeleteFramebuffers(2, framebuffers.data());
-    std::array<GLuint, 4> textures = { m_normalsTexFront, m_normalsTexBack, m_depthTexFront, m_depthTexBack };
-    glDeleteTextures(4, textures.data());
+    std::array<GLuint, 2> framebuffers  = { m_framebufferFront, m_framebufferBack };
+    glDeleteFramebuffers(framebuffers.size(), framebuffers.data());
+    std::array<GLuint, 6> textures      = { m_normalsTexFront, m_normalsTexBack,
+                                            m_depthTexFront, m_depthTexBack,
+                                            m_innerDistTexFront, m_innerDistTexBack };
+    glDeleteTextures(textures.size(), textures.data());
 }
 
 void RefractionRender::initShaders() {
     m_renderGeometry    = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "deferred.vert")
-                                         .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "write-normal.frag").build();
+                                         .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "write-geometric.frag").build();
     m_screenQuad        = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "screen-quad.vert")
                                          .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "screen-quad.frag").build();
 }
 
 void RefractionRender::initTexturesAndFramebuffers() {
-    // Defines that RGBA accesses will all access the R channel. Used for depth textures.
-    std::array<GLint, 4> swizzleAllAccessRed = {GL_RED, GL_RED, GL_RED, GL_RED};
+    // Define specifications to be reused
+    std::array<GLint, 4> swizzleAllAccessRed = {GL_RED, GL_RED, GL_RED, GL_RED};        // RGBA accesses will all access the R channel
+    std::array<GLuint, 2> attachments { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };   // Framebuffer will render to two color attachments
 
     // Depth textures
     std::array<GLuint*, 2> depthTexPtrs = { &m_depthTexFront, &m_depthTexBack };
@@ -56,15 +59,29 @@ void RefractionRender::initTexturesAndFramebuffers() {
         glTextureParameteri(*texPtr, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     }
 
+    // Inner distance textures
+    std::array<GLuint*, 2> innerDistTexPtrs = { &m_innerDistTexFront, &m_innerDistTexBack };
+    for (GLuint* texPtr : innerDistTexPtrs) {
+        glCreateTextures(GL_TEXTURE_2D, 1, texPtr);
+        glTextureStorage2D(*texPtr, 1, GL_R32F, m_windowDims.x, m_windowDims.y);
+        glTextureParameteri(*texPtr, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(*texPtr, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTextureParameteriv(*texPtr, GL_TEXTURE_SWIZZLE_RGBA, swizzleAllAccessRed.data());
+    }
+
     // Front face framebuffer. Create and attach textures as render targets
     glCreateFramebuffers(1, &m_framebufferFront);
     glNamedFramebufferTexture(m_framebufferFront, GL_DEPTH_ATTACHMENT, m_depthTexFront, 0);
     glNamedFramebufferTexture(m_framebufferFront, GL_COLOR_ATTACHMENT0, m_normalsTexFront, 0);
+    glNamedFramebufferTexture(m_framebufferFront, GL_COLOR_ATTACHMENT1, m_innerDistTexFront, 0);
+    glNamedFramebufferDrawBuffers(m_framebufferFront, attachments.size(), attachments.data());
 
     // Back face framebuffer. Create and attach textures as render targets
     glCreateFramebuffers(1, &m_framebufferBack);
     glNamedFramebufferTexture(m_framebufferBack, GL_DEPTH_ATTACHMENT, m_depthTexBack, 0);
     glNamedFramebufferTexture(m_framebufferBack, GL_COLOR_ATTACHMENT0, m_normalsTexBack, 0);
+    glNamedFramebufferTexture(m_framebufferBack, GL_COLOR_ATTACHMENT1, m_innerDistTexBack, 0);
+    glNamedFramebufferDrawBuffers(m_framebufferBack, attachments.size(), attachments.data());
 }
 
 void RefractionRender::draw(const GPUMesh& mesh, 
@@ -89,10 +106,14 @@ void RefractionRender::draw(const GPUMesh& mesh,
         case RenderOption::NormalsBackFace: {
             drawQuad(m_normalsTexBack);
         } break;
-        case RenderOption::InnerObjectDistancesFrontFace:
-        case RenderOption::InnerObjectDistancesBackFace:
+        case RenderOption::InnerObjectDistancesFrontFace: {
+            drawQuad(m_innerDistTexFront);
+        } break;
+        case RenderOption::InnerObjectDistancesBackFace: {
+            drawQuad(m_innerDistTexBack);
+        } break;
         case RenderOption::Combined:
-            throw std::runtime_error(std::format("{} not implemented!", magic_enum::enum_name(m_config.currentRender)));
+            throw std::runtime_error("Combined drawing not yet implemented!");
             break;
     }
 }

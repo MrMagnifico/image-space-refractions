@@ -17,6 +17,10 @@ namespace utils {
     // Initial window size config
     constexpr int32_t WIDTH     = 1280;
     constexpr int32_t HEIGHT    = 720;
+
+    // Numerical constants
+    constexpr float ZERO_EPSILON        = 1e-5f;
+    constexpr float INTERIOR_RAY_OFFSET = 1e-3f;
 }
 
 #endif 
