@@ -3,8 +3,7 @@
 #define _CONFIG_H_
 
 enum class RenderOption {
-    EnvironmentMap = 0,
-    DepthFrontFace,
+    DepthFrontFace = 0,
     DepthBackFace,
     NormalsFrontFace,
     NormalsBackFace,
@@ -14,9 +13,11 @@ enum class RenderOption {
 };
 
 struct Config {
-    RenderOption currentRender  { RenderOption::DepthFrontFace }; // The thing to be currently rendered
+    RenderOption currentRender  { RenderOption::Combined }; // The thing to be currently rendered
+    bool showEnvironmentMap     { false };
+    float refractiveIndexRatio  { 0.15f };
+
     bool useBVH                 { true };
-    float refractiveIndex       { 0.15f };
 };
 
 

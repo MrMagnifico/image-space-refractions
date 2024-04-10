@@ -29,10 +29,12 @@ RefractionRender::~RefractionRender() {
 }
 
 void RefractionRender::initShaders() {
-    m_renderGeometry    = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "deferred.vert")
+    m_renderGeometry    = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "write-geometric.vert")
                                          .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "write-geometric.frag").build();
     m_screenQuad        = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "screen-quad.vert")
                                          .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "screen-quad.frag").build();
+    m_renderCombined    = ShaderBuilder().addStage(GL_VERTEX_SHADER, utils::SHADERS_PATH / "refract-render.vert")
+                                         .addStage(GL_FRAGMENT_SHADER, utils::SHADERS_PATH / "refract-render.frag").build();
 }
 
 void RefractionRender::initTexturesAndFramebuffers() {
@@ -84,16 +86,14 @@ void RefractionRender::initTexturesAndFramebuffers() {
     glNamedFramebufferDrawBuffers(m_framebufferBack, attachments.size(), attachments.data());
 }
 
-void RefractionRender::draw(const GPUMesh& mesh, 
-                            const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
+void RefractionRender::draw(const GPUMesh& mesh,
+                            const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection,
+                            const glm::vec3& cameraPosition, const GLuint environmentMapTex) {
     // Render geometry info so we can draw whatever we want
     renderGeometry(mesh, model, view, projection);
 
     // Use rendered data to display the actual requested thing
     switch (m_config.currentRender) {
-        case RenderOption::EnvironmentMap: {
-            throw std::runtime_error("Requested refraction renderer to draw environment map");
-        } break;
         case RenderOption::DepthFrontFace: {
             drawQuad(m_depthTexFront);
         } break;
@@ -112,14 +112,13 @@ void RefractionRender::draw(const GPUMesh& mesh,
         case RenderOption::InnerObjectDistancesBackFace: {
             drawQuad(m_innerDistTexBack);
         } break;
-        case RenderOption::Combined:
-            throw std::runtime_error("Combined drawing not yet implemented!");
-            break;
+        case RenderOption::Combined: {
+            renderCombined(mesh, model, view, projection, cameraPosition, environmentMapTex);
+        } break;
     }
 }
 
-void RefractionRender::renderGeometry(const GPUMesh& mesh,
-                                      const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
+void RefractionRender::renderGeometry(const GPUMesh& mesh, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection) {
     // Get original depth function
     GLint originalDepthFunction;
     glGetIntegerv(GL_DEPTH_FUNC, &originalDepthFunction);
@@ -154,6 +153,48 @@ void RefractionRender::renderGeometrySingle(const GPUMesh& mesh,
     glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix3fv(2, 1, GL_FALSE, glm::value_ptr(normalModel));
     mesh.draw(m_renderGeometry);
+}
+
+void RefractionRender::renderCombined(const GPUMesh& mesh,
+                                      const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection,
+                                      const glm::vec3& cameraPosition, const GLuint environmentMapTex) {
+    // Set screen buffer, clear it, set viewport, and bind combined render shader program
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, m_windowDims.x, m_windowDims.y);
+    m_renderCombined.bind();
+    
+    // Uniforms: transformation matrices
+    const glm::mat4 mvp = projection * view * model;
+    glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(mvp));
+    glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(model));
+
+    // Uniforms: textures
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_depthTexFront);
+    glUniform1i(2, 0);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_depthTexBack);
+    glUniform1i(3, 1);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, m_normalsTexFront);
+    glUniform1i(4, 2);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, m_normalsTexBack);
+    glUniform1i(5, 3);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, m_innerDistTexFront);
+    glUniform1i(6, 4);
+    glActiveTexture(GL_TEXTURE5);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, environmentMapTex);
+    glUniform1i(7, 5);
+
+    // Uniforms: miscellaneous
+    glUniform3fv(8, 1, glm::value_ptr(cameraPosition));
+    glUniform1f(9, m_config.refractiveIndexRatio);
+
+    // Draw the mesh
+    mesh.draw(m_renderCombined);
 }
 
 void RefractionRender::drawQuad(GLuint texture) {

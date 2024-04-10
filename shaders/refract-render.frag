@@ -1,0 +1,53 @@
+#version 460
+
+// Transformation matrices
+layout(location = 0) uniform mat4 mvp;      // Full MVP matrix
+layout(location = 1) uniform mat4 model;    // Model matrix only
+
+// Textures
+layout(location = 2) uniform sampler2D frontDepth;
+layout(location = 3) uniform sampler2D backDepth;
+layout(location = 4) uniform sampler2D frontNormals;
+layout(location = 5) uniform sampler2D backNormals;
+layout(location = 6) uniform sampler2D innerDistance;
+layout(location = 7) uniform samplerCube environmentMap;
+
+// Misc
+layout(location = 8) uniform vec3 cameraPosition;
+layout(location = 9) uniform float refractiveIndexRatio;
+
+// Input from vertex shader
+layout(location = 0) in vec3 fragPosWorld;  // World-space fragment position
+layout(location = 1) in vec3 fragPosScreen; // Screen-space fragment position (NDC space, i.e. [-1, 1])
+
+// Output for color attachments
+layout(location = 0) out vec4 outColor; // On-screen color
+
+void main() {
+    vec2 texCoords = fragPosScreen.xy * 0.5 + 0.5;
+
+    // Compute exterior entry angle
+	vec3 fragToCamera   = normalize(cameraPosition - fragPosWorld);
+    vec3 normalFront    = texture(frontNormals, texCoords).xyz;
+    float cosExterior   = dot(fragToCamera, normalFront); // Theta_i in paper
+
+    // Compute interior entry angle
+    vec3 cameraToFrag           = -fragToCamera;
+    vec3 refractionDirection    = refract(cameraToFrag, normalFront, refractiveIndexRatio);
+    vec3 normalFrontInverse     = -normalFront;
+    float cosInterior           = dot(refractionDirection, normalFrontInverse); // Theta_t in paper
+
+    // Compute exit point
+    float unrefractedDistance           = texture(backDepth, texCoords).x - texture(frontDepth, texCoords).x;   // d_V in paper
+    float distanceInner                 = texture(innerDistance, texCoords).x;                                  // d_N in paper
+    float angleRatio                    = acos(cosInterior) / acos(cosExterior);
+    float approximateRefractionDistance = (angleRatio * unrefractedDistance) + ((1.0 - angleRatio) * distanceInner);
+    vec3 exitPointWorld                 = fragPosWorld + (approximateRefractionDistance * refractionDirection);
+
+    // Compute final color
+    vec4 exitPointScreen            = mvp * vec4(exitPointWorld, 1.0);
+    vec2 exitPointTexCoords         = exitPointScreen.xy * 0.5 + 0.5;
+    vec3 exitNormal                 = -texture(backNormals, exitPointTexCoords).xyz; // Refract expects normal defining a hemisphere that the incident direction is in
+    vec3 exitRefractionDirection    = refract(refractionDirection, exitNormal, 1.0 / refractiveIndexRatio); // The entry and exit media have been flipped, so this second refraction uses the repicrocal of their ratio
+    outColor                        = texture(environmentMap, -exitRefractionDirection);
+}
