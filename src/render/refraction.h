@@ -6,6 +6,7 @@
 DISABLE_WARNINGS_PUSH()
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 DISABLE_WARNINGS_POP()
 
 #include <render/mesh.h>
@@ -17,19 +18,24 @@ public:
     RefractionRender(Config& config, glm::ivec2 windowDims);
     ~RefractionRender();
 
-    void draw(const GPUMesh& mesh, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
+    void draw(const GPUMesh& mesh,
+              const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection,
+              const glm::vec3& cameraPosition, const GLuint environmentMapTex);
 
 private:
     void initShaders();
     void initTexturesAndFramebuffers();
     void renderGeometry(const GPUMesh& mesh, const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
     void renderGeometrySingle(const GPUMesh& mesh, const glm::mat4& model, const glm::mat3& normalModel, const glm::mat4& mvp);
+    void renderCombined(const GPUMesh& mesh,
+                        const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection,
+                        const glm::vec3& cameraPosition, const GLuint environmentMapTex);
     void drawQuad(GLuint texture);
 
     Config& m_config;
 
     glm::ivec2 m_windowDims;
-    Shader m_renderGeometry, m_screenQuad;
+    Shader m_renderGeometry, m_renderCombined, m_screenQuad;
 
     GLuint m_depthTexFront, m_depthTexBack;
     GLuint m_normalsTexFront, m_normalsTexBack;

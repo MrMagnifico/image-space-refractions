@@ -1,4 +1,4 @@
-#include <framework/opengl_includes.h>      // Include glad before glfw3
+#include <framework/opengl_includes.h>
 #include <framework/ray.h>
 #include <framework/trackball.h>
 #include <framework/window.h>
@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
             .t          = std::numeric_limits<float>::max()
         };
         bvh.intersect(interiorRay, dummyHit);
-        vertex.distanceInner = utils::linearMap(interiorRay.t, 0.0f, Trackball::FAR_PLANE, 0.0f, 1.0f) ; // Normalise from [0, furthestPossibleDepth] to [0, 1]
+        vertex.distanceInner = interiorRay.t;
 
         #pragma omp critical
         progressbar.update();
@@ -87,10 +87,11 @@ int main(int argc, char* argv[]) {
         // Set model matrix
         const glm::mat4 model = glm::mat4(1.0f);
         
-        // Draw the requested option
-        if (config.currentRender == RenderOption::EnvironmentMap) {
+        // Draw the requested option and environment map if desired
+        refractionRender.draw(mainMeshGPU, model, trackball.viewMatrix(), trackball.projectionMatrix(), trackball.position(), environmentMap.getTexId());
+        if (config.currentRender == RenderOption::Combined && config.showEnvironmentMap) {
             environmentMap.render(trackball.viewMatrix(), trackball.projectionMatrix(), trackball.position());
-        } else { refractionRender.draw(mainMeshGPU, model, trackball.viewMatrix(), trackball.projectionMatrix()); }
+        }
 
         // Render UI
         menu.draw();

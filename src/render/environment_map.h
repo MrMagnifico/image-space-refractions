@@ -25,6 +25,8 @@ public:
 
     void render(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
 
+    GLuint getTexId() { return m_cubemapTex; }
+
 private:
     static constexpr GLsizei NUM_CUBE_TRIANGLES = 12;
 

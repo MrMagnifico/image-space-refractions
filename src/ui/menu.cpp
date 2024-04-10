@@ -24,7 +24,11 @@ void Menu::draw() {
         [](const auto& str) { return str.data(); });
     ImGui::Combo("Render mode", (int*) &m_config.currentRender, renderOptionsPointers.data(), static_cast<int>(renderOptionsPointers.size()));
 
-    ImGui::SliderFloat("Refraction Index", &m_config.refractiveIndex, 0.0f, 1.0f);
+    // Draw combined rendering controls only if the combined result is being viewed
+    if (m_config.currentRender == RenderOption::Combined) {
+        ImGui::Checkbox("Show environment map", &m_config.showEnvironmentMap);
+        ImGui::SliderFloat("Refractive index ratio", &m_config.refractiveIndexRatio, 1.0f, 2.0f);
+    }
 
     ImGui::End();
 }

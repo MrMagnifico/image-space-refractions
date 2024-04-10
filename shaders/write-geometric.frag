@@ -1,6 +1,6 @@
 #version 460
 
-// Input from fragment shader
+// Input from vertex shader
 layout(location = 0) in vec3 fragPos;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in float fragDistanceInner;
