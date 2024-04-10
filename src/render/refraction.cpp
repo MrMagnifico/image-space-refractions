@@ -5,6 +5,8 @@ DISABLE_WARNINGS_PUSH()
 #include <glm/gtc/type_ptr.hpp>
 DISABLE_WARNINGS_POP()
 
+#include <framework/trackball.h>
+
 #include <utils/constants.h>
 #include <utils/render_utils.hpp>
 #include <utils/magic_enum.hpp>
@@ -164,12 +166,12 @@ void RefractionRender::renderCombined(const GPUMesh& mesh,
     glViewport(0, 0, m_windowDims.x, m_windowDims.y);
     m_renderCombined.bind();
     
-    // Uniforms: transformation matrices
+    // Uniforms: Transformation matrices
     const glm::mat4 mvp = projection * view * model;
     glUniformMatrix4fv(0, 1, GL_FALSE, glm::value_ptr(mvp));
     glUniformMatrix4fv(1, 1, GL_FALSE, glm::value_ptr(model));
 
-    // Uniforms: textures
+    // Uniforms: Textures
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_depthTexFront);
     glUniform1i(2, 0);
@@ -189,9 +191,11 @@ void RefractionRender::renderCombined(const GPUMesh& mesh,
     glBindTexture(GL_TEXTURE_CUBE_MAP, environmentMapTex);
     glUniform1i(7, 5);
 
-    // Uniforms: miscellaneous
+    // Uniforms: Miscellaneous
     glUniform3fv(8, 1, glm::value_ptr(cameraPosition));
     glUniform1f(9, m_config.refractiveIndexRatio);
+    glUniform1f(10, Trackball::NEAR_PLANE);
+    glUniform1f(11, Trackball::FAR_PLANE);
 
     // Draw the mesh
     mesh.draw(m_renderCombined);

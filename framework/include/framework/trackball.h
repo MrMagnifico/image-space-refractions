@@ -30,8 +30,8 @@ public:
 	[[nodiscard]] glm::vec3 lookAt() const; // Point that the camera is looking at / rotating around.
 	[[nodiscard]] glm::mat4 viewMatrix() const;
 	[[nodiscard]] glm::mat4 projectionMatrix() const;
-        [[nodiscard]] glm::vec3 rotationEulerAngles() const;
-        [[nodiscard]] float distanceFromLookAt() const;
+	[[nodiscard]] glm::vec3 rotationEulerAngles() const;
+	[[nodiscard]] float distanceFromLookAt() const;
 
 	void setCamera(const glm::vec3 lookAt, const glm::vec3 rotations, const float dist); // Set the position and orientation of the camera.
 

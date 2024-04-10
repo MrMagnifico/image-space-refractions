@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
             .t          = std::numeric_limits<float>::max()
         };
         bvh.intersect(interiorRay, dummyHit);
-        vertex.distanceInner = utils::linearMap(interiorRay.t, 0.0f, Trackball::FAR_PLANE, 0.0f, 1.0f) ; // Normalise from [0, furthestPossibleDepth] to [0, 1]
+        vertex.distanceInner = interiorRay.t;
 
         #pragma omp critical
         progressbar.update();

@@ -13,10 +13,12 @@ enum class RenderOption {
 };
 
 struct Config {
+    // Refraction rendering
     RenderOption currentRender  { RenderOption::Combined }; // The thing to be currently rendered
-    bool showEnvironmentMap     { false };
-    float refractiveIndexRatio  { 0.15f };
+    bool showEnvironmentMap     { true };
+    float refractiveIndexRatio  { 1.0f };
 
+    // Inner object distance ray-tracing
     bool useBVH                 { true };
 };
 
