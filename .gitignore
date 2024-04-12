@@ -505,4 +505,5 @@ FodyWeavers.xsd
 
 # Blobs
 /build
+/cache
 /resources

@@ -20,7 +20,7 @@ add_library(CGFramework STATIC
 	"src/window.cpp"
 	"src/imguizmo.cpp"
 	"src/ImGuizmo/ImGuizmo.cpp")
-target_include_directories(CGFramework PRIVATE "include/framework/" PUBLIC "include/")
+target_include_directories(CGFramework PRIVATE "include/cereal" PRIVATE "include/framework/" PUBLIC "include/")
 target_link_libraries(CGFramework PUBLIC OpenGL::GL glad glfw glm imgui nativefiledialog stb tinyobjloader)
 target_compile_features(CGFramework PUBLIC cxx_std_23)
 set_property(TARGET CGFramework PROPERTY POSITION_INDEPENDENT_CODE ON)

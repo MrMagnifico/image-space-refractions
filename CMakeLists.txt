@@ -30,5 +30,6 @@ target_link_libraries(RefractionsExec PRIVATE RefractionsLib)
 
 # Preprocessor definitions for paths
 target_compile_definitions(RefractionsLib PUBLIC
+	"-DCACHE_DIR=\"${CMAKE_CURRENT_LIST_DIR}/cache/\""
 	"-DRESOURCES_DIR=\"${CMAKE_CURRENT_LIST_DIR}/resources/\""
 	"-DSHADERS_DIR=\"${CMAKE_CURRENT_LIST_DIR}/shaders/\"")

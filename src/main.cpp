@@ -3,6 +3,11 @@
 #include <framework/trackball.h>
 #include <framework/window.h>
 
+#include <framework/disable_all_warnings.h>
+DISABLE_WARNINGS_PUSH()
+#include <cereal/archives/binary.hpp>
+DISABLE_WARNINGS_POP()
+
 #include <ray_tracing/bounding_volume_hierarchy.h>
 #include <render/environment_map.h>
 #include <render/mesh.h>
@@ -15,30 +20,15 @@
 
 #include <omp.h>
 
+#include <fstream>
 #include <iostream>
+#include <string>
 #include <vector>
 
 
-int main(int argc, char* argv[]) {
-    // Init core objects
-    Config config;
-    Window window { "Interactive Refraction", glm::ivec2(utils::WIDTH, utils::HEIGHT), OpenGLVersion::GL46 };
-    Trackball trackball { &window, glm::radians(50.0f) };
-    Menu menu(config);
-    RefractionRender refractionRender(config, window.getWindowSize());
-
-    // Environment map
-    constexpr char envMapFolder[]   = "Skansen";
-    EnvMapFilePaths envMapFilePaths = { .right  = utils::RESOURCES_PATH / envMapFolder / "posx.jpg",
-                                        .left   = utils::RESOURCES_PATH / envMapFolder / "negx.jpg",
-                                        .top    = utils::RESOURCES_PATH / envMapFolder / "posy.jpg",
-                                        .bottom = utils::RESOURCES_PATH / envMapFolder / "negy.jpg",
-                                        .front  = utils::RESOURCES_PATH / envMapFolder / "posz.jpg",
-                                        .back   = utils::RESOURCES_PATH / envMapFolder / "negz.jpg" };
-    EnvironmentMap environmentMap(envMapFilePaths);
-
+Mesh computeDist(const Config& config, const std::filesystem::path& modelFile) {
     // Load mesh into CPU and construct BVH
-    std::vector<Mesh> allLoadedMeshes   = loadMesh(utils::RESOURCES_PATH / "spot.obj", true);
+    std::vector<Mesh> allLoadedMeshes   = loadMesh(utils::RESOURCES_PATH / modelFile, true);
     Mesh& mainMeshCPU                   = allLoadedMeshes[0];
     BoundingVolumeHierarchy bvh(mainMeshCPU, config);
 
@@ -64,8 +54,51 @@ int main(int argc, char* argv[]) {
     }
     std::cout << std::endl << "Finished computing inner distances!" << std::endl;
 
+    return mainMeshCPU;
+}
+
+int main(int argc, char* argv[]) {
+    // Init core objects
+    Config config;
+    Window window { "Interactive Refraction", glm::ivec2(utils::WIDTH, utils::HEIGHT), OpenGLVersion::GL46 };
+    Trackball trackball { &window, glm::radians(50.0f) };
+    Menu menu(config);
+    RefractionRender refractionRender(config, window.getWindowSize());
+
+    // Environment map
+    constexpr char envMapFolder[]   = "Skansen";
+    EnvMapFilePaths envMapFilePaths = { .right  = utils::RESOURCES_PATH / envMapFolder / "posx.jpg",
+                                        .left   = utils::RESOURCES_PATH / envMapFolder / "negx.jpg",
+                                        .top    = utils::RESOURCES_PATH / envMapFolder / "posy.jpg",
+                                        .bottom = utils::RESOURCES_PATH / envMapFolder / "negy.jpg",
+                                        .front  = utils::RESOURCES_PATH / envMapFolder / "posz.jpg",
+                                        .back   = utils::RESOURCES_PATH / envMapFolder / "negz.jpg" };
+    EnvironmentMap environmentMap(envMapFilePaths);
+
+    // File paths for model and its cache
+    std::filesystem::path modelFile("dragon.obj");
+    std::filesystem::path cacheFile = modelFile;
+    cacheFile.replace_extension("cache");
+    if (!std::filesystem::exists(utils::CACHE_PATH)) { std::filesystem::create_directory(utils::CACHE_PATH); }
+    std::filesystem::path cachePath = utils::CACHE_PATH / cacheFile;
+
+    // Load cached version if it exists, compute inner distance and save to archive otherwise
+    Mesh cpuMesh;
+    if (std::filesystem::exists(cachePath)) {
+        std::cout << "Cached mesh found!" << std::endl;
+        std::ifstream fileStream(cachePath, std::ios::binary);
+        cereal::BinaryInputArchive cacheArchive(fileStream);
+        cacheArchive(cpuMesh);
+    } else {
+        std::cout << "No cached mesh!" << std::endl;
+        cpuMesh = computeDist(config, modelFile);
+        std::ofstream fileStream(cachePath, std::ios::binary);
+        cereal::BinaryOutputArchive cacheArchive(fileStream);
+        cacheArchive(cpuMesh);
+    }
+
     // Load mesh into GPU
-    GPUMesh mainMeshGPU(mainMeshCPU);
+    GPUMesh mainMeshGPU(cpuMesh);
 
     // Set GLFW key callback
     window.registerKeyCallback([&](int key, int /* scancode */, int action, int /* mods */) {
