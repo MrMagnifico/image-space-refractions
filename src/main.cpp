@@ -28,12 +28,13 @@ int main(int argc, char* argv[]) {
     RefractionRender refractionRender(config, window.getWindowSize());
 
     // Environment map
-    EnvMapFilePaths envMapFilePaths = { .right  = utils::RESOURCES_PATH / "skybox" / "right.jpg",
-                                        .left   = utils::RESOURCES_PATH / "skybox" / "left.jpg",
-                                        .top    = utils::RESOURCES_PATH / "skybox" / "top.jpg",
-                                        .bottom = utils::RESOURCES_PATH / "skybox" / "bottom.jpg",
-                                        .front  = utils::RESOURCES_PATH / "skybox" / "front.jpg",
-                                        .back   = utils::RESOURCES_PATH / "skybox" / "back.jpg" };
+    constexpr char envMapFolder[]   = "Skansen";
+    EnvMapFilePaths envMapFilePaths = { .right  = utils::RESOURCES_PATH / envMapFolder / "posx.jpg",
+                                        .left   = utils::RESOURCES_PATH / envMapFolder / "negx.jpg",
+                                        .top    = utils::RESOURCES_PATH / envMapFolder / "posy.jpg",
+                                        .bottom = utils::RESOURCES_PATH / envMapFolder / "negy.jpg",
+                                        .front  = utils::RESOURCES_PATH / envMapFolder / "posz.jpg",
+                                        .back   = utils::RESOURCES_PATH / envMapFolder / "negz.jpg" };
     EnvironmentMap environmentMap(envMapFilePaths);
 
     // Load mesh into CPU and construct BVH

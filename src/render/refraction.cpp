@@ -195,6 +195,7 @@ void RefractionRender::renderCombined(const GPUMesh& mesh,
     glUniform1f(9, m_config.refractiveIndexRatio);
     glUniform1f(10, Trackball::NEAR_PLANE);
     glUniform1f(11, Trackball::FAR_PLANE);
+    glUniform3fv(12, 1, glm::value_ptr(m_config.transparency));
 
     // Draw the mesh
     mesh.draw(m_renderCombined);

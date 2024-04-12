@@ -2,6 +2,7 @@
 
 #include <framework/disable_all_warnings.h>
 DISABLE_WARNINGS_PUSH()
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
 DISABLE_WARNINGS_POP()
 
@@ -28,6 +29,7 @@ void Menu::draw() {
     if (m_config.currentRender == RenderOption::Combined) {
         ImGui::Checkbox("Show environment map", &m_config.showEnvironmentMap);
         ImGui::SliderFloat("Refractive index ratio", &m_config.refractiveIndexRatio, 1.0f, 2.0f);
+        ImGui::ColorEdit3("Per-color transparency", glm::value_ptr(m_config.transparency));
     }
 
     ImGui::End();

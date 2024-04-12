@@ -17,6 +17,7 @@ layout(location = 8) uniform vec3 cameraPosition;
 layout(location = 9) uniform float refractiveIndexRatio;
 layout(location = 10) uniform float nearPlaneDist;
 layout(location = 11) uniform float farPlaneDist;
+layout(location = 12) uniform vec3 transparency;
 
 // Input from vertex shader
 layout(location = 0) in vec3 fragPosWorld;  // World-space fragment position
@@ -59,5 +60,7 @@ void main() {
     vec3 exitRefractionDirection    = refract(refractionDirection, exitNormal, 1.0 / refractiveIndexRatio); // The entry and exit media have been flipped, so this second refraction uses the repicrocal of their ratio
     
     // Compute final color
-    outColor = texture(environmentMap, exitRefractionDirection);
+    // Two refraction media, so light is attenuated twice
+    vec3 attenuatedColor    = texture(environmentMap, exitRefractionDirection).rgb * transparency * transparency;
+    outColor                = vec4(attenuatedColor, 1.0);
 }
