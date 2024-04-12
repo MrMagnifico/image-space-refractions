@@ -59,7 +59,5 @@ void main() {
     vec3 exitRefractionDirection    = refract(refractionDirection, exitNormal, 1.0 / refractiveIndexRatio); // The entry and exit media have been flipped, so this second refraction uses the repicrocal of their ratio
     
     // Compute final color
-    // TODO: Remove when environment map is fixed
-    exitRefractionDirection.z   = -exitRefractionDirection.z; // Front and back are reversed for some reason. Probably a bug with the environment map
-    outColor                    = texture(environmentMap, exitRefractionDirection);
+    outColor = texture(environmentMap, exitRefractionDirection);
 }

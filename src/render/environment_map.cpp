@@ -23,10 +23,10 @@ EnvironmentMap::~EnvironmentMap() {
     glDeleteBuffers(1, &m_cubeVBO);
 }
 
-void EnvironmentMap::render(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
-    // Remove translation component from viewProjection matrix
-    glm::mat4 viewNoTranslation     = glm::mat4(glm::mat3(view));
-    glm::mat4 viewProjection        = projection * viewNoTranslation;
+void EnvironmentMap::render(const glm::mat4& projection, const glm::vec3 cameraForward, const glm::vec3& cameraUp) {
+    // Compute MVP (no model component)
+    glm::mat4 view              = glm::lookAt(glm::vec3(0.0f), cameraForward, cameraUp); // View matrix at the center of the scene (0, 0, 0)
+    glm::mat4 viewProjection    = projection * view;
 
     // Bind on-screen framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -38,15 +38,11 @@ void EnvironmentMap::render(const glm::mat4& view, const glm::mat4& projection, 
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemapTex);
     glUniform1i(1, 0);
 
-    // Draw unit cube with face culling
-    GLboolean cullFaceWasBeingUsed;
-    glGetBooleanv(GL_CULL_FACE, &cullFaceWasBeingUsed);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
+    // Draw unit cube without writing to depth buffer so everything else can render on top of the map
+    glDepthMask(GL_FALSE);
     glBindVertexArray(m_cubeVAO);
     glDrawArrays(GL_TRIANGLES, 0, NUM_CUBE_TRIANGLES * 3); // 3 vertices per triangle
-    glCullFace(GL_BACK);
-    if (!cullFaceWasBeingUsed) { glDisable(GL_CULL_FACE); }
+    glDepthMask(GL_TRUE);
 }
 
 void EnvironmentMap::createCubemapTex(const EnvMapFilePaths& texPaths) {
@@ -59,7 +55,6 @@ void EnvironmentMap::createCubemapTex(const EnvMapFilePaths& texPaths) {
     std::array<std::filesystem::path, 6> pathsArr = { texPaths.right,   texPaths.left,
                                                       texPaths.top,     texPaths.bottom,
                                                       texPaths.front,   texPaths.back };
-    stbi_set_flip_vertically_on_load(false); // This allows for the images to be vertically oriented correctly
     for (uint8_t faceIdx = 0U; faceIdx < 6UL; faceIdx++) {
         int32_t width, height, channels;
         const std::filesystem::path& faceTexPath    = pathsArr[faceIdx];
@@ -75,7 +70,6 @@ void EnvironmentMap::createCubemapTex(const EnvMapFilePaths& texPaths) {
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + faceIdx, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         stbi_image_free(data);
     }
-    stbi_set_flip_vertically_on_load(true);
 
     glTextureParameteri(m_cubemapTex, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(m_cubemapTex, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

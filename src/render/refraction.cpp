@@ -162,7 +162,6 @@ void RefractionRender::renderCombined(const GPUMesh& mesh,
                                       const glm::vec3& cameraPosition, const GLuint environmentMapTex) {
     // Set screen buffer, clear it, set viewport, and bind combined render shader program
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, m_windowDims.x, m_windowDims.y);
     m_renderCombined.bind();
     
@@ -203,7 +202,6 @@ void RefractionRender::renderCombined(const GPUMesh& mesh,
 
 void RefractionRender::drawQuad(GLuint texture) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, m_windowDims.x, m_windowDims.y);
     m_screenQuad.bind();
     glActiveTexture(GL_TEXTURE0);

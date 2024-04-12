@@ -84,14 +84,17 @@ int main(int argc, char* argv[]) {
     while (!window.shouldClose()) {
         window.updateInput();
 
+        // Clear previous output
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         // Set model matrix
         const glm::mat4 model = glm::mat4(1.0f);
         
         // Draw the requested option and environment map if desired
-        refractionRender.draw(mainMeshGPU, model, trackball.viewMatrix(), trackball.projectionMatrix(), trackball.position(), environmentMap.getTexId());
         if (config.currentRender == RenderOption::Combined && config.showEnvironmentMap) {
-            environmentMap.render(trackball.viewMatrix(), trackball.projectionMatrix(), trackball.position());
+            environmentMap.render(trackball.projectionMatrix(), trackball.forward(), trackball.up());
         }
+        refractionRender.draw(mainMeshGPU, model, trackball.viewMatrix(), trackball.projectionMatrix(), trackball.position(), environmentMap.getTexId());
 
         // Render UI
         menu.draw();
