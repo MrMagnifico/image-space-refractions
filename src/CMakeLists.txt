@@ -5,6 +5,7 @@ target_sources(RefractionsLib
         "${CMAKE_CURRENT_LIST_DIR}/ray_tracing/intersect.cpp"
 
         "${CMAKE_CURRENT_LIST_DIR}/render/environment_map.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/render/mesh_manager.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/render/mesh.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/render/refraction.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/render/texture.cpp"

@@ -4,6 +4,7 @@
 DISABLE_WARNINGS_PUSH()
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
+#include <nativefiledialog/nfd.h>
 DISABLE_WARNINGS_POP()
 
 #include <utils/magic_enum.hpp>
@@ -12,11 +13,21 @@ DISABLE_WARNINGS_POP()
 #include <iterator>
 
 
-Menu::Menu(Config& config)
-    : m_config(config) {}
+Menu::Menu(Config& config, MeshManager& meshManager)
+    : m_config(config)
+    , m_meshManager(meshManager) {}
 
 void Menu::draw() {
     ImGui::Begin("Controls");
+
+    // Button to select model
+    if (ImGui::Button("Change model")) {
+        nfdchar_t *outPath  = nullptr;
+        nfdresult_t result  = NFD_OpenDialog("obj;cache", nullptr, &outPath);
+        if (result == NFD_OKAY)         { m_meshManager.loadNewMesh(outPath); }
+        else if (result == NFD_ERROR)   { throw std::runtime_error("NFD encountered an error"); }
+        free(outPath);
+    }
 
     // Selection controls for which thing to draw
     constexpr auto renderOptions = magic_enum::enum_names<RenderOption>();
