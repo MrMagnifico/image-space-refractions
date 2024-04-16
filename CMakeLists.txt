@@ -14,7 +14,7 @@ enable_sanitizers(RefractionsLib)
 set_project_warnings(RefractionsLib)
 include(${CMAKE_CURRENT_LIST_DIR}/src/CMakeLists.txt)
 target_include_directories(RefractionsLib PUBLIC "${CMAKE_CURRENT_LIST_DIR}/src/")
-target_compile_features(RefractionsLib PUBLIC cxx_std_23)
+target_compile_features(RefractionsLib PUBLIC cxx_std_20)
 target_link_libraries(RefractionsLib PUBLIC CGFramework)
 
 # Find and link OpenMP
@@ -25,10 +25,11 @@ target_link_libraries(RefractionsLib PUBLIC OpenMP::OpenMP_CXX)
 add_executable(RefractionsExec "src/main.cpp")
 enable_sanitizers(RefractionsExec)
 set_project_warnings(RefractionsExec)
-target_compile_features(RefractionsExec PUBLIC cxx_std_23)
+target_compile_features(RefractionsExec PUBLIC cxx_std_20)
 target_link_libraries(RefractionsExec PRIVATE RefractionsLib)
 
 # Preprocessor definitions for paths
 target_compile_definitions(RefractionsLib PUBLIC
+	"-DCACHE_DIR=\"${CMAKE_CURRENT_LIST_DIR}/cache/\""
 	"-DRESOURCES_DIR=\"${CMAKE_CURRENT_LIST_DIR}/resources/\""
 	"-DSHADERS_DIR=\"${CMAKE_CURRENT_LIST_DIR}/shaders/\"")

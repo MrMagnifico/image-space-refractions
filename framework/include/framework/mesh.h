@@ -1,11 +1,16 @@
 #pragma once
-#include "image.h"
 // Suppress warnings in third-party code.
 #include <framework/disable_all_warnings.h>
 DISABLE_WARNINGS_PUSH()
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/glm_compat.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 DISABLE_WARNINGS_POP()
+
+#include "image.h"
 
 #include <filesystem>
 #include <limits>
@@ -20,6 +25,9 @@ struct Vertex {
 	float distanceInner { std::numeric_limits<float>::max() };	// Distance to the nearest point on the interior of the mesh along normal (d_N in the paper)
 
 	[[nodiscard]] constexpr bool operator==(const Vertex&) const noexcept = default;
+
+	template<class Archive>
+	void serialize(Archive& ar) { ar(position, normal, texCoord, distanceInner); }
 };
 
 struct Material {
@@ -34,6 +42,9 @@ struct Material {
 	//   material.kdTexture->getTexel(...);
 	// }
 	std::shared_ptr<Image> kdTexture;
+
+	template<class Archive>
+	void serialize(Archive& ar) { ar(kd, ks, shininess, transparency); }
 };
 
 struct Mesh {
@@ -43,6 +54,9 @@ struct Mesh {
 	std::vector<glm::uvec3> triangles;
 
 	Material material;
+
+	template<class Archive>
+	void serialize(Archive& ar) { ar(CEREAL_NVP(vertices), CEREAL_NVP(triangles), material); }
 };
 
 [[nodiscard]] std::vector<Mesh> loadMesh(const std::filesystem::path& file, bool normalize = false);

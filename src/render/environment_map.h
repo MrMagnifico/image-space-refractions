@@ -23,7 +23,7 @@ public:
     EnvironmentMap(const EnvMapFilePaths& texPaths);
     ~EnvironmentMap();
 
-    void render(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
+    void render(const glm::mat4& projection, const glm::vec3 cameraForward, const glm::vec3& cameraUp);
 
     GLuint getTexId() { return m_cubemapTex; }
 

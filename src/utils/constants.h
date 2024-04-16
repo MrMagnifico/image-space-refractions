@@ -11,6 +11,7 @@ namespace utils {
     constexpr GLuint INVALID = 0xFFFFFFFF;
     
     // Resource paths
+    const std::filesystem::path CACHE_PATH      = CACHE_DIR;
     const std::filesystem::path RESOURCES_PATH  = RESOURCES_DIR;
     const std::filesystem::path SHADERS_PATH    = SHADERS_DIR;
 
